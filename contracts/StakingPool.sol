@@ -34,6 +34,15 @@ contract StakingPool {
         uint256 balance;
     }
 
+    struct PoolData {
+        uint256 totalCarbonCredits;
+        uint256 totalCxt;
+        uint256 yieldPerCxt;
+        uint256 daysStaked;
+        uint256 reward;
+        uint256 stakedCxt;
+    }
+
     uint256 public timeCreated;
     mapping(address => Stake) public stakes;
     uint256 public totalStaked;
@@ -126,23 +135,23 @@ contract StakingPool {
         emit CarbonCreditsRemoved(amount);
     }
 
-    function getStake(address account) external view returns (Stake memory) {
+    function getStake(address account) public view returns (Stake memory) {
         return stakes[account];
     }
 
-    function getYields() external view returns (Yield[] memory) {
+    function getYields() public view returns (Yield[] memory) {
         return yields;
     }
 
-    function getTotalStaked() external view returns (uint256) {
+    function getTotalStaked() public view returns (uint256) {
         return totalStaked;
     }
 
-    function getTransactions(address account) external view returns (Transaction[] memory) {
+    function getTransactions(address account) public view returns (Transaction[] memory) {
         return stakes[account].transactions;
     }
 
-    function calculateStakeYield(address account) external view returns (uint256) {
+    function calculateStakeYield(address account) public view returns (uint256) {
         uint256 totalYield = 0;
         Stake memory yieldStake = stakes[account];
         Transaction[] memory transactions = yieldStake.transactions;
@@ -156,7 +165,7 @@ contract StakingPool {
                 if (transactions[i].time <= currentTime) {
                     transactionAmount = transactions[i].amount;
                 } else {
-                    break;
+                    break;  
                 }
             }
             if (applicableYield.time > 0) {
@@ -171,6 +180,19 @@ contract StakingPool {
         require(newOwner != address(0), "New owner is the zero address");
         emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
+    }
+
+    function getPoolData(address account) public view returns (PoolData memory) {
+        uint256 yield = (totalCarbonCredits* 10**DECIMALS) / 365;
+        uint256 yieldPerToken = totalStaked != 0 ? yield / totalStaked : 0;
+        return PoolData({
+            totalCarbonCredits: totalCarbonCredits,
+            totalCxt: totalStaked,
+            yieldPerCxt: yieldPerToken,
+            daysStaked: 0,
+            reward: calculateStakeYield(account),
+            stakedCxt: stakes[account].balance
+        });
     }
 
     function _getMostRecentYield(uint256 time, uint256 startFromIndex) internal view returns (Yield memory) {

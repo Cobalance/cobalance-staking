@@ -104,6 +104,32 @@ describe("StakingPool", function () {
     await expect(stakingPool.connect(addr1).removeCarbonCredits(1)).to.be.revertedWith("Caller is not the owner");
   });
 
+  it("Should generate pool stats", async function () {
+    await stakingPool.addCarbonCredits(1000);
+    await stakingPool.connect(addr1).stake(100);
+    await time.increase(oneDay * 10);
+    const poolStats = await stakingPool.connect(addr1).getPoolData(addr1);
+    expect(poolStats[0]).to.equal(1000);
+    expect(poolStats[1]).to.equal(100);
+    expect(poolStats[2]).to.equal(2739726);
+    expect(poolStats[3]).to.equal(0);
+    expect(poolStats[4]).to.equal(3013698600n);
+    expect(poolStats[5]).to.equal(100);
+  });
+
+
+  it("Should find some view data", async function () {
+    await stakingPool.addCarbonCredits(1000);
+    for(let i = 0; i < 10; i++) {
+      await stakingPool.connect(addr1).stake(i + 1);
+    }
+    expect((await stakingPool.getTransactions(addr1)).length).to.equal(10);
+
+    await stakingPool.stake(100);
+    await stakingPool.connect(addr2).stake(100);
+
+  });
+
   afterEach(function () {
     sinon.restore();
   });

@@ -2,12 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "./ERC20/IERC20.sol";
-import "./ERC3643/IERC3643.sol";
 
 contract StakingPool {
 
     IERC20 public CXT;
-    IERC3643 public carbonCredit;
+    IERC20 public carbonCredit;
 
     uint256 private constant DECIMALS = 8;
 
@@ -66,7 +65,7 @@ contract StakingPool {
         owner = msg.sender;
         emit OwnershipTransferred(address(0), msg.sender);
         CXT = IERC20(cxtAddress);
-        carbonCredit = IERC3643(carbonCreditAddress);
+        carbonCredit = IERC20(carbonCreditAddress);
         timeCreated = block.timestamp;
     }
 
